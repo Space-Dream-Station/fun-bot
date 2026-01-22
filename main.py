@@ -8,8 +8,7 @@ from config import (
     DISCORD_BAN_COOLDOWN,
 )
 
-intents = discord.Intents.default()
-intents.members = True
+intents = discord.Intents.all()
 
 client = discord.Client(intents=intents)
 
