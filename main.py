@@ -39,7 +39,7 @@ async def ban_loop():
         await guild.ban(
             member,
             reason="Автобан: набегатор, перманентный КД",
-            delete_message_days=0,
+            delete_message_seconds=0,
         )
         print(f"Пользователь {member} забанен")
     except discord.Forbidden:
