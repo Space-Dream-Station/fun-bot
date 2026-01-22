@@ -1,0 +1,23 @@
+disnake
+pyyaml
+curl_cffi
+pycurl
+aiohttp
+beautifulsoup4
+pytz
+fuzzywuzzy==0.18.0
+g4f
+nest-asyncio==1.6.0
+python-dotenv==1.0.1
+# python-Levenshtein==0.25.1
+requests==2.32.3
+## Removed: MariaDB/MySQL deps after migration to SQLite
+python-dateutil==2.9.0
+aiofiles
+google-api-python-client
+google-auth
+google-auth-httplib2
+google-auth-oauthlib
+psutil
+sqlite3
+discord.py==1.7.3
