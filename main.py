@@ -1,5 +1,6 @@
 import disnake
 from disnake.ext import tasks
+import datetime
 
 from config import (
     DISCORD_KEY,
@@ -26,6 +27,9 @@ async def on_ready():
         # Проверяем права бота на сервере
         perms = guild.me.guild_permissions
         print(f"Права бана: {perms.ban_members}")
+        print(f"Администратор: {perms.administrator}")
+        print(f"Высшая роль бота: {guild.me.top_role.name}")
+        print(f"Позиция роли бота: {guild.me.top_role.position}")
     else:
         print("Сервер не найден!")
     
@@ -48,6 +52,8 @@ async def ban_loop():
         member = await guild.fetch_member(DISCORD_TARGET_USER_ID)
         print(f"Найден пользователь: {member} ({member.id})")
         print(f"Статус пользователя: {member.status}")
+        print(f"Высшая роль пользователя: {member.top_role.name}")
+        print(f"Позиция роли пользователя: {member.top_role.position}")
         print(f"Роли пользователя: {[role.name for role in member.roles]}")
     except disnake.NotFound:
         print(f"Пользователь {DISCORD_TARGET_USER_ID} не найден на сервере")
@@ -73,15 +79,21 @@ async def ban_loop():
 
     try:
         print("Попытка забанить...")
+        # Используем новый параметр clean_history_duration вместо delete_message_days
         await member.ban(
             reason="Автобан: набегатор, перманентный КД",
-            delete_message_days=0,
+            clean_history_duration=datetime.timedelta(seconds=0),
         )
         print(f"✓ Пользователь {member} успешно забанен")
-    except disnake.Forbidden:
-        print("✗ Ошибка: у бота нет прав на бан")
-        print(f"Роль бота: {guild.me.top_role.name}")
-        print(f"Роль пользователя: {member.top_role.name}")
+    except disnake.Forbidden as e:
+        print(f"✗ Ошибка: у бота нет прав на бан: {e}")
+        print(f"Роль бота: {guild.me.top_role.name} (позиция: {guild.me.top_role.position})")
+        print(f"Роль пользователя: {member.top_role.name} (позиция: {member.top_role.position})")
+        
+        # Проверяем права более детально
+        perms = guild.me.guild_permissions
+        print(f"ban_members право: {perms.ban_members}")
+        print(f"administrator право: {perms.administrator}")
     except disnake.HTTPException as e:
         print(f"✗ Ошибка Discord API: {e}")
     except Exception as e:
@@ -98,57 +110,16 @@ async def on_message(message):
                 member = await guild.fetch_member(DISCORD_TARGET_USER_ID)
                 await member.ban(
                     reason="Тест бана",
-                    delete_message_days=0,  # ← ИСПРАВЛЕНО: seconds → days
+                    clean_history_duration=datetime.timedelta(seconds=0),
                 )
                 await message.channel.send(f"✅ Пользователь {member} забанен")
-            except disnake.Forbidden:
-                await message.channel.send("❌ Нет прав для бана")
+            except disnake.Forbidden as e:
+                await message.channel.send(f"❌ Нет прав для бана: {e}")
             except disnake.NotFound:
                 await message.channel.send("❌ Пользователь не найден")
             except Exception as e:
                 await message.channel.send(f"❌ Ошибка: {e}")
     
-    # Проверка информации о боте
-    elif message.content == "!botinfo":
-        guild = bot.get_guild(DISCORD_GUILD_ID)
-        if guild:
-            me = guild.me
-            perms = me.guild_permissions
-            embed = disnake.Embed(
-                title="Информация о боте",
-                description=f"Сервер: {guild.name}",
-                color=disnake.Color.blue()
-            )
-            embed.add_field(name="Имя бота", value=str(me), inline=True)
-            embed.add_field(name="Права на бан", value="✅" if perms.ban_members else "❌", inline=True)
-            embed.add_field(name="Высшая роль", value=me.top_role.name, inline=True)
-            embed.add_field(name="Целевой ID", value=DISCORD_TARGET_USER_ID, inline=True)
-            embed.add_field(name="Интервал", value=f"{DISCORD_BAN_COOLDOWN} сек", inline=True)
-            await message.channel.send(embed=embed)
-    
-    # Проверка существования пользователя
-    elif message.content == "!checkuser":
-        guild = bot.get_guild(DISCORD_GUILD_ID)
-        if guild:
-            try:
-                member = await guild.fetch_member(DISCORD_TARGET_USER_ID)
-                embed = disnake.Embed(
-                    title="Информация о пользователе",
-                    description=f"ID: {DISCORD_TARGET_USER_ID}",
-                    color=disnake.Color.green()
-                )
-                embed.add_field(name="Имя", value=str(member), inline=True)
-                embed.add_field(name="Статус", value=str(member.status), inline=True)
-                embed.add_field(name="Присоединился", value=member.joined_at.strftime("%Y-%m-%d %H:%M"), inline=True)
-                embed.add_field(name="Роли", value=", ".join([role.name for role in member.roles[1:]]), inline=False)
-                embed.add_field(name="Высшая роль", value=member.top_role.name, inline=True)
-                await message.channel.send(embed=embed)
-            except disnake.NotFound:
-                await message.channel.send(f"❌ Пользователь {DISCORD_TARGET_USER_ID} не найден на сервере")
-            except disnake.Forbidden:
-                await message.channel.send("❌ Нет прав для просмотра участника")
-
-
 if DISCORD_KEY == "NULL":
     raise RuntimeError("DISCORD_KEY не задан, бот остановлен")
 
