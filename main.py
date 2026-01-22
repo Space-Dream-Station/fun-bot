@@ -75,7 +75,7 @@ async def ban_loop():
         print("Попытка забанить...")
         await member.ban(
             reason="Автобан: набегатор, перманентный КД",
-            delete_message_days=0,  # ← ИСПРАВЛЕНО: seconds → days
+            delete_message_days=0,
         )
         print(f"✓ Пользователь {member} успешно забанен")
     except disnake.Forbidden:
