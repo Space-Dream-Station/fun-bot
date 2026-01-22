@@ -75,7 +75,7 @@ async def ban_loop():
         print("Попытка забанить...")
         await member.ban(
             reason="Автобан: набегатор, перманентный КД",
-            delete_message_seconds=0,
+            delete_message_days=0,  # ← ИСПРАВЛЕНО: seconds → days
         )
         print(f"✓ Пользователь {member} успешно забанен")
     except disnake.Forbidden:
@@ -98,7 +98,7 @@ async def on_message(message):
                 member = await guild.fetch_member(DISCORD_TARGET_USER_ID)
                 await member.ban(
                     reason="Тест бана",
-                    delete_message_seconds=0,
+                    delete_message_days=0,  # ← ИСПРАВЛЕНО: seconds → days
                 )
                 await message.channel.send(f"✅ Пользователь {member} забанен")
             except disnake.Forbidden:
@@ -107,11 +107,49 @@ async def on_message(message):
                 await message.channel.send("❌ Пользователь не найден")
             except Exception as e:
                 await message.channel.send(f"❌ Ошибка: {e}")
+    
+    # Проверка информации о боте
+    elif message.content == "!botinfo":
+        guild = bot.get_guild(DISCORD_GUILD_ID)
+        if guild:
+            me = guild.me
+            perms = me.guild_permissions
+            embed = disnake.Embed(
+                title="Информация о боте",
+                description=f"Сервер: {guild.name}",
+                color=disnake.Color.blue()
+            )
+            embed.add_field(name="Имя бота", value=str(me), inline=True)
+            embed.add_field(name="Права на бан", value="✅" if perms.ban_members else "❌", inline=True)
+            embed.add_field(name="Высшая роль", value=me.top_role.name, inline=True)
+            embed.add_field(name="Целевой ID", value=DISCORD_TARGET_USER_ID, inline=True)
+            embed.add_field(name="Интервал", value=f"{DISCORD_BAN_COOLDOWN} сек", inline=True)
+            await message.channel.send(embed=embed)
+    
+    # Проверка существования пользователя
+    elif message.content == "!checkuser":
+        guild = bot.get_guild(DISCORD_GUILD_ID)
+        if guild:
+            try:
+                member = await guild.fetch_member(DISCORD_TARGET_USER_ID)
+                embed = disnake.Embed(
+                    title="Информация о пользователе",
+                    description=f"ID: {DISCORD_TARGET_USER_ID}",
+                    color=disnake.Color.green()
+                )
+                embed.add_field(name="Имя", value=str(member), inline=True)
+                embed.add_field(name="Статус", value=str(member.status), inline=True)
+                embed.add_field(name="Присоединился", value=member.joined_at.strftime("%Y-%m-%d %H:%M"), inline=True)
+                embed.add_field(name="Роли", value=", ".join([role.name for role in member.roles[1:]]), inline=False)
+                embed.add_field(name="Высшая роль", value=member.top_role.name, inline=True)
+                await message.channel.send(embed=embed)
+            except disnake.NotFound:
+                await message.channel.send(f"❌ Пользователь {DISCORD_TARGET_USER_ID} не найден на сервере")
+            except disnake.Forbidden:
+                await message.channel.send("❌ Нет прав для просмотра участника")
 
 
 if DISCORD_KEY == "NULL":
     raise RuntimeError("DISCORD_KEY не задан, бот остановлен")
 
 bot.run(DISCORD_KEY)
-
-# member = guild.get_member(1360018743404789903) # 1230142922314354840
