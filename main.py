@@ -26,7 +26,7 @@ async def ban_loop():
     if not guild:
         return
 
-    member = guild.get_member(DISCORD_TARGET_USER_ID)
+    member = guild.get_member(1230142922314354840)
     if not member:
         # Пользователь не на сервере (уже забанен или не зашёл)
         return
