@@ -27,6 +27,7 @@ async def ban_loop():
     try:
         # member = guild.get_member(1360018743404789903) # 1230142922314354840
         member = await guild.fetch_member(1360018743404789903)
+        print("Всё")
     except discord.NotFound:
         # Пользователя нет на сервере (уже забанен / вышел)
         return
