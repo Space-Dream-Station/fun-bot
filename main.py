@@ -4,7 +4,7 @@ from discord.ext import tasks
 from config import (
     DISCORD_KEY,
     DISCORD_GUILD_ID,
-    DISCORD_TARGET_USER_ID,  # ← используем эту переменную
+    DISCORD_TARGET_USER_ID,
     DISCORD_BAN_COOLDOWN,
 )
 
@@ -27,7 +27,7 @@ async def ban_loop():
         return
 
     try:
-        member = await guild.fetch_member(DISCORD_TARGET_USER_ID)  # ← используем переменную
+        member = await guild.fetch_member(DISCORD_TARGET_USER_ID)
         print(f"Найден пользователь: {member}")
     except discord.NotFound:
         print(f"Пользователь {DISCORD_TARGET_USER_ID} не найден на сервере")
@@ -53,4 +53,4 @@ if DISCORD_KEY == "NULL":
 
 client.run(DISCORD_KEY)
 
-        # member = guild.get_member(1360018743404789903) # 1230142922314354840
+# member = guild.get_member(1360018743404789903) # 1230142922314354840
