@@ -3,9 +3,7 @@ pyyaml
 curl_cffi
 pycurl
 aiohttp
-beautifulsoup4
 pytz
-fuzzywuzzy==0.18.0
 g4f
 nest-asyncio==1.6.0
 python-dotenv==1.0.1
